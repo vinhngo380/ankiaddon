@@ -7,6 +7,9 @@ from aqt.qt import *
 
 import anki.stats
 
+from anki.utils import ids2str
+
+
 #this injects code into the todayStats of CollectionStats from anki library
 todayStats_old = anki.stats.CollectionStats.todayStats
 
@@ -83,13 +86,41 @@ def todayStats_new(self):
         + "<span>Past week:</span>" + pastWeek + "</td><td style='padding: 5px'>" \
         + "<span>" + name + "</span>" + pastPeriod + "</td></tr></table>"
 
-def testFunction(self) -> None:
+
+
+
+
+anki.stats.CollectionStats.todayStats = todayStats_new
+
+
+def statListTest(lim, startTime, endTime):
+
+    flunked, passed = anki.stats.CollectionStats.col.db.first("""
+    select
+    sum(case when ease = 1 and type == 1 then 1 else 0 end), /* flunked */
+    sum(case when ease > 1 and type == 1 then 1 else 0 end), /* passed */
+    from revlog where id > ? and id < ?"""+lim, startTime, endTime)
+    return flunked, passed
+
+#taken from CollectionStats cause idk how to inject new code/use _revlogLimit when it requires a self argument
+
+
+def testtest():
+    lim = anki.stats.CollectionStats._revlogLimit(anki.stats.CollectionStats)
+    if lim:
+        lim = " and " + lim
+    oneDayPeriod = anki.stats.CollectionStats.col.sched.dayCutoff - 86400 * 1000
+    past2Days = statList(lim, oneDayPeriod * 2, oneDayPeriod)
+    return past2Days
+
+def testFunction() -> None:
     # get the number of cards in the current collection, which is stored in
     # the main window
-    test = self._revloglimit()
+    cardCount = testtest()
     # show a message box
-    showInfo(test)
-    
+    showInfo(cardCount)
+
+
 # create a new menu item, "test"
 action = QAction("test", mw)
 # set it to call testFunction when it's clicked
@@ -98,6 +129,9 @@ qconnect(action.triggered, testFunction)
 mw.form.menuTools.addAction(action)
 
 
-anki.stats.CollectionStats.todayStats = todayStats_new
-
-
+# def revlogLimit() -> str:
+#     if anki.stats.CollectionStats.wholeCollection:
+#         return ""
+#     return "cid in (select id from cards where did in %s)" % ids2str(
+#         anki.stats.CollectionStats.col.decks.active()
+#     )
