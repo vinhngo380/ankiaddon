@@ -5,10 +5,8 @@ from aqt.utils import showInfo, qconnect
 # import all of the Qt GUI library
 from aqt.qt import *
 
+
 import anki.stats
-
-from anki.utils import ids2str
-
 
 #this injects code into the todayStats of CollectionStats from anki library
 todayStats_old = anki.stats.CollectionStats.todayStats
@@ -88,38 +86,26 @@ def todayStats_new(self):
 
 
 
-
-
 anki.stats.CollectionStats.todayStats = todayStats_new
 
 
-def statListTest(lim, startTime, endTime):
-
-    flunked, passed = anki.stats.CollectionStats.col.db.first("""
+def statListTest(startTime, endTime):
+    flunked, passed = mw.col.db.first(self, """
     select
     sum(case when ease = 1 and type == 1 then 1 else 0 end), /* flunked */
     sum(case when ease > 1 and type == 1 then 1 else 0 end), /* passed */
-    from revlog where id > ? and id < ?"""+lim, startTime, endTime)
+    from revlog where id > ? and id < ?""", startTime, endTime)
     return flunked, passed
 
-#taken from CollectionStats cause idk how to inject new code/use _revlogLimit when it requires a self argument
-
-
-def testtest():
-    lim = anki.stats.CollectionStats._revlogLimit(anki.stats.CollectionStats)
-    if lim:
-        lim = " and " + lim
-    oneDayPeriod = anki.stats.CollectionStats.col.sched.dayCutoff - 86400 * 1000
-    past2Days = statList(lim, oneDayPeriod * 2, oneDayPeriod)
-    return past2Days
 
 def testFunction() -> None:
     # get the number of cards in the current collection, which is stored in
     # the main window
-    cardCount = testtest()
+    oneDayPeriod = mw.col.sched.dayCutoff - 86400 * 1000
+    past2Days = statListTest(lim, oneDayPeriod * 2, oneDayPeriod)
     # show a message box
-    showInfo(cardCount)
-
+    # cardCount = anki.stats.CollectionStats.test()
+    showInfo(past2Days)
 
 # create a new menu item, "test"
 action = QAction("test", mw)
