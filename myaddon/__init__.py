@@ -5,8 +5,8 @@ from aqt.utils import showInfo, qconnect
 # import all of the Qt GUI library
 from aqt.qt import *
 
-
 import anki.stats
+import time
 
 #this injects code into the todayStats of CollectionStats from anki library
 todayStats_old = anki.stats.CollectionStats.todayStats
@@ -86,26 +86,31 @@ def todayStats_new(self):
 
 
 
+
 anki.stats.CollectionStats.todayStats = todayStats_new
 
 
 def statListTest(startTime, endTime):
-    flunked, passed = mw.col.db.first(self, """
-    select
+    flunked, passed = mw.col.db.first(
+    f"""select
     sum(case when ease = 1 and type == 1 then 1 else 0 end), /* flunked */
-    sum(case when ease > 1 and type == 1 then 1 else 0 end), /* passed */
-    from revlog where id > ? and id < ?""", startTime, endTime)
+    sum(case when ease > 1 and type == 1 then 1 else 0 end) /* passed */
+    from revlog where id between {startTime} and {endTime}""")
     return flunked, passed
 
 
 def testFunction() -> None:
     # get the number of cards in the current collection, which is stored in
     # the main window
-    oneDayPeriod = mw.col.sched.dayCutoff - 86400 * 1000
-    past2Days = statListTest(lim, oneDayPeriod * 2, oneDayPeriod)
+    oneDayPeriod = (mw.col.sched.dayCutoff - 86400) * 1000
+    oneMonth = oneDayPeriod * 31
+
+    past2Days = statListTest(0, oneMonth)
+    test = statListTest(0, oneDayPeriod)
     # show a message box
     # cardCount = anki.stats.CollectionStats.test()
-    showInfo(past2Days)
+    results = str([past2Days, test, oneDayPeriod, oneMonth, oneDayPeriod - oneMonth])
+    showInfo(results)
 
 # create a new menu item, "test"
 action = QAction("test", mw)
