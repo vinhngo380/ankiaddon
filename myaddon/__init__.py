@@ -98,18 +98,22 @@ def statListTest(startTime, endTime):
     from revlog where id between {startTime} and {endTime}""")
     return flunked, passed
 
+#returns a time in miliseconds in x days before
+def intervalGenerator(days) -> int: 
+    return (mw.col.sched.dayCutoff - 86400 * days) * 1000
 
 def testFunction() -> None:
     # get the number of cards in the current collection, which is stored in
     # the main window
-    oneDayPeriod = (mw.col.sched.dayCutoff - 86400) * 1000
-    oneMonth = oneDayPeriod * 31
+    seconds_day = 86400
+    one_day = intervalGenerator(2)
+    two_days = intervalGenerator(3)
 
-    past2Days = statListTest(0, oneMonth)
-    test = statListTest(0, oneDayPeriod)
+    past_2_days = statListTest(two_days, one_day)
+    test = statListTest(0, one_day)
     # show a message box
     # cardCount = anki.stats.CollectionStats.test()
-    results = str([past2Days, test, oneDayPeriod, oneMonth, oneDayPeriod - oneMonth])
+    results = str([past_2_days, test, one_day, two_days, one_day - two_days])
     showInfo(results)
 
 # create a new menu item, "test"
