@@ -90,29 +90,55 @@ def todayStats_new(self):
 anki.stats.CollectionStats.todayStats = todayStats_new
 
 
-def statListTest(startTime, endTime):
-    flunked, passed = mw.col.db.first(
+def statListTest(start_time: int, end_time: int):
+    flunked, passed, passed_supermature, flunked_supermature, relearned, learned = mw.col.db.first(
     f"""select
     sum(case when ease = 1 and type == 1 then 1 else 0 end), /* flunked */
-    sum(case when ease > 1 and type == 1 then 1 else 0 end) /* passed */
-    from revlog where id between {startTime} and {endTime}""")
-    return flunked, passed
+    sum(case when ease > 1 and type == 1 then 1 else 0 end), /* passed */
+    sum(case when ease > 1 and type == 1 and lastIvl >= 100 then 1 else 0 end), /* passed_supermature */
+    sum(case when ease = 1 and type == 1 and lastIvl >= 100 then 1 else 0 end), /* flunked_supermature */
+    sum(case when ivl > 0 and type == 2 then 1 else 0 end), /* relearned */
+    sum(case when ivl > 0 and type == 0 then 1 else 0 end) /* learned */
+    from revlog where id between {start_time} and {end_time}""")
+    return flunked, passed, passed_supermature, flunked_supermature, relearned, learned
+
+def find_cards_reviewed_between(start_date: int, end_date: int):
+    # select from cards instead of just selecting uniques from revlog
+    # in order to exclude deleted cards
+    return mw.col.db.list(  # type: ignore
+        "SELECT id FROM cards where id in "
+        "(SELECT cid FROM revlog where id between ? and ?)",
+        start_date,
+        end_date,
+    )
 
 #returns a time in miliseconds in x days before
 def interval_generator(days) -> int: 
     return (mw.col.sched.dayCutoff - 86400 * days) * 1000
 
+def retention_percent(stats) -> str:
+    failed, passed = stats[0], stats[1]
+    total  = failed + passed
+    retention = round(((passed / total) * 100), 2)
+    return str(retention) + "%"
+
+
+
 def debug() -> None:
     # get the number of cards in the current collection, which is stored in
     # the main window
+    s, e = 1, 0
     seconds_day = 86400
-    now = interval_generator(0)
-    one_day = interval_generator(2)
-    two_days = interval_generator(3)
+    startInterval = interval_generator(s)
+    endInterval = interval_generator(e)
 
-    two_days_ago = statListTest(one_day, now)
-    test = statListTest(one_day, now)
-    results = str([two_days_ago, test, one_day, two_days, one_day - two_days])
+    myMethod = statListTest(startInterval, endInterval)
+    stat_list = []
+    for i in range(1, 31):
+        retention = retention_percent((i, i - 1))
+        stat_list.append(retention)
+    myMethodDebug = "regular myMethod " + str(s) + " " + str(e) + ": " + str(myMethod)
+    results = str([myMethodDebug, sum(list(myMethod)), stat_list, len(stat_list)])
     showInfo(results)
 
 # create a new menu item, "test"
@@ -121,11 +147,3 @@ action = QAction("anki retention debug", mw)
 qconnect(action.triggered, debug)
 # and add it to the tools menu
 mw.form.menuTools.addAction(action)
-
-
-# def revlogLimit() -> str:
-#     if anki.stats.CollectionStats.wholeCollection:
-#         return ""
-#     return "cid in (select id from cards where did in %s)" % ids2str(
-#         anki.stats.CollectionStats.col.decks.active()
-#     )
