@@ -99,27 +99,26 @@ def statListTest(startTime, endTime):
     return flunked, passed
 
 #returns a time in miliseconds in x days before
-def intervalGenerator(days) -> int: 
+def interval_generator(days) -> int: 
     return (mw.col.sched.dayCutoff - 86400 * days) * 1000
 
-def testFunction() -> None:
+def debug() -> None:
     # get the number of cards in the current collection, which is stored in
     # the main window
     seconds_day = 86400
-    one_day = intervalGenerator(2)
-    two_days = intervalGenerator(3)
+    now = interval_generator(0)
+    one_day = interval_generator(2)
+    two_days = interval_generator(3)
 
-    past_2_days = statListTest(two_days, one_day)
-    test = statListTest(0, one_day)
-    # show a message box
-    # cardCount = anki.stats.CollectionStats.test()
-    results = str([past_2_days, test, one_day, two_days, one_day - two_days])
+    two_days_ago = statListTest(one_day, now)
+    test = statListTest(one_day, now)
+    results = str([two_days_ago, test, one_day, two_days, one_day - two_days])
     showInfo(results)
 
 # create a new menu item, "test"
-action = QAction("test", mw)
+action = QAction("anki retention debug", mw)
 # set it to call testFunction when it's clicked
-qconnect(action.triggered, testFunction)
+qconnect(action.triggered, debug)
 # and add it to the tools menu
 mw.form.menuTools.addAction(action)
 
