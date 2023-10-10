@@ -6,7 +6,7 @@ from aqt.utils import showInfo, qconnect
 from aqt.qt import *
 
 import anki.stats
-import time
+from data import *
 
 #this injects code into the todayStats of CollectionStats from anki library
 todayStats_old = anki.stats.CollectionStats.todayStats
@@ -90,19 +90,8 @@ def todayStats_new(self):
 anki.stats.CollectionStats.todayStats = todayStats_new
 
 
-def statListTest(start_time: int, end_time: int):
-    flunked, passed, passed_supermature, flunked_supermature, relearned, learned = mw.col.db.first(
-    f"""select
-    sum(case when ease = 1 and type == 1 then 1 else 0 end), /* flunked */
-    sum(case when ease > 1 and type == 1 then 1 else 0 end), /* passed */
-    sum(case when ease > 1 and type == 1 and lastIvl >= 100 then 1 else 0 end), /* passed_supermature */
-    sum(case when ease = 1 and type == 1 and lastIvl >= 100 then 1 else 0 end), /* flunked_supermature */
-    sum(case when ivl > 0 and type == 2 then 1 else 0 end), /* relearned */
-    sum(case when ivl > 0 and type == 0 then 1 else 0 end) /* learned */
-    from revlog where id between {start_time} and {end_time}""")
-    return flunked, passed, passed_supermature, flunked_supermature, relearned, learned
-
-def find_cards_reviewed_between(start_date: int, end_date: int):
+#tester method from Heatmap Review
+def find_cards_reviewed_between(self, start_date: int, end_date: int):
     # select from cards instead of just selecting uniques from revlog
     # in order to exclude deleted cards
     return mw.col.db.list(  # type: ignore
@@ -112,34 +101,24 @@ def find_cards_reviewed_between(start_date: int, end_date: int):
         end_date,
     )
 
-#returns a time in miliseconds in x days before
-def interval_generator(days) -> int: 
-    return (mw.col.sched.dayCutoff - 86400 * days) * 1000
-
-def retention_percent(stats) -> str:
-    failed, passed = stats[0], stats[1]
-    total  = failed + passed
-    retention = round(((passed / total) * 100), 2)
-    return str(retention) + "%"
-
-
-
+one_month_ret = DataCalculator(31, 0)
 def debug() -> None:
     # get the number of cards in the current collection, which is stored in
     # the main window
-    s, e = 1, 0
-    seconds_day = 86400
-    startInterval = interval_generator(s)
-    endInterval = interval_generator(e)
+    # s, e = 1, 0
+    # seconds_day = 86400
+    # startInterval = interval_generator(s)
+    # endInterval = interval_generator(e)
 
-    myMethod = statListTest(startInterval, endInterval)
-    stat_list = []
-    for i in range(1, 31):
-        retention = retention_percent((i, i - 1))
-        stat_list.append(retention)
-    myMethodDebug = "regular myMethod " + str(s) + " " + str(e) + ": " + str(myMethod)
-    results = str([myMethodDebug, sum(list(myMethod)), stat_list, len(stat_list)])
-    showInfo(results)
+    # myMethod = statListTest(startInterval, endInterval)
+    # stat_list = []
+    # for i in range(1, 32):
+    #     retention = retention_percent(i, i - 1)
+    #     stat_list.append(retention)
+    # myMethodDebug = "regular myMethod " + str(s) + " " + str(e) + ": " + str(myMethod)
+    # results = str([myMethodDebug, sum(list(myMethod)), stat_list, len(stat_list)])
+    results = one_month_ret.generate_list()
+    showInfo(str(results))
 
 # create a new menu item, "test"
 action = QAction("anki retention debug", mw)
