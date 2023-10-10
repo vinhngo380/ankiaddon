@@ -6,7 +6,7 @@ from aqt.utils import showInfo, qconnect
 from aqt.qt import *
 
 import anki.stats
-from data import *
+from .data import DataCalculator
 
 #this injects code into the todayStats of CollectionStats from anki library
 todayStats_old = anki.stats.CollectionStats.todayStats
