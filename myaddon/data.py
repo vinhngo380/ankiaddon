@@ -11,7 +11,7 @@ class DataCalculator:
     def _interval_generator(self, days: int) -> int: 
         return (mw.col.sched.dayCutoff - 86400 * days) * 1000
     
-    def query_stats(self, end_interval: int, start_interval: int):
+    def query_stats(self, end_interval: int, start_interval: int) -> Tuple[int]:
         flunked, passed, passed_supermature, flunked_supermature, relearned, learned = mw.col.db.first(
         f"""select
         sum(case when ease = 1 and type == 1 then 1 else 0 end), /* flunked */
