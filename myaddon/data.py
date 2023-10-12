@@ -23,8 +23,6 @@ class DataCalculator:
         from revlog where id between {start_interval} and {end_interval}""")
         return (flunked, passed, passed_supermature, flunked_supermature, relearned, learned)
 
-
-        #start_day > end_day
     def retention_percent(self, end_day: int, start_day: int) -> str:
         start_interval = self._interval_generator(start_day)
         end_interval = self._interval_generator(end_day)
