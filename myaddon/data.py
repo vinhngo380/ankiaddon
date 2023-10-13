@@ -28,19 +28,23 @@ class DataCalculator:
         end_interval = self._interval_generator(end_day)
         full_stats = self.query_stats(end_interval, start_interval)
         flunked, passed = full_stats[0], full_stats[1]
-        total  = flunked + passed
         try:
+            total  = flunked + passed
             calc = round(((passed / total) * 100), 2)
             temp = str(calc) + "%"
-        except:
-            temp = "N/A"
+        except TypeError:
+            temp = "No cards studied yet"
+        except ZeroDivisionError:
+            temp = "Zero division error"
         result = temp
         return result
     
     #generates a list between the start and end days that were specified from earlier
     def generate_list(self) -> List[str]: 
         retentions = []
-        for i in range(self.start_day + 1, self.end_day + 1):
+        for i in range(self.sta_day + 1, self.end_day + 1):
             retention_per = self.retention_percent(i - 1, i)
             retentions.append(retention_per)
         return retentions
+
+        
