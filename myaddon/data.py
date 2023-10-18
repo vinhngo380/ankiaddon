@@ -28,12 +28,14 @@ class DataCalculator:
         end_interval = self._interval_generator(end_day)
         full_stats = self.query_stats(end_interval, start_interval)
         flunked, passed = full_stats[0], full_stats[1]
-        total  = flunked + passed
         try:
+            total  = flunked + passed
             calc = round(((passed / total) * 100), 2)
-            temp = calc
-        except:
-            temp = -1
+            temp = str(calc) + "%"
+        except TypeError:
+            temp = "No cards studied yet"
+        except ZeroDivisionError:
+            temp = "Zero division error"
         result = temp
         return result
     
