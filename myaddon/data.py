@@ -28,6 +28,7 @@ class DataCalculator:
         end_interval = self._interval_generator(end_day)
         full_stats = self.query_stats(end_interval, start_interval)
         flunked, passed = full_stats[0], full_stats[1]
+        #requires fixing
         try:
             total  = flunked + passed
             calc = round(((passed / total) * 100), 2)
