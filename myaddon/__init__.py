@@ -7,6 +7,22 @@ from aqt.qt import *
 #data.py
 from .data import DataCalculator
 
+import matplotlib.pyplot as plt
+import numpy as np
+
+def render(stats: DataCalculator) -> None:
+    plt.style.use('_mpl-gallery')
+    end_day = stats.get_period()[0]
+    x = 0.5 + np.range(end_day)
+    y = stats.generate_list()
+    fig, ax = plt.subplots()
+
+    ax.bar(x, y, width=1, edgecolor="white", linewidth=0.7)
+
+    ax.set(xlim=(0, 100), xticks=np.arange(1, 100),
+       ylim=(0, 100), yticks=np.arange(1, 100))
+
+    plt.show()
 
 #tester method from Heatmap Review
 def find_cards_reviewed_between(self, start_date: int, end_date: int):

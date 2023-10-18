@@ -4,8 +4,8 @@ from aqt import mw
 class DataCalculator:
     #start_day represents time closer to present
     def __init__(self, end_day: int, start_day=0):
-        self.start_day = start_day
-        self.end_day = end_day
+        self._start_day = start_day
+        self._end_day = end_day
         
     #returns a time in miliseconds in x days before
     def _interval_generator(self, days: int) -> int: 
@@ -31,16 +31,25 @@ class DataCalculator:
         total  = flunked + passed
         try:
             calc = round(((passed / total) * 100), 2)
-            temp = str(calc) + "%"
+            temp = calc
         except:
-            temp = "N/A"
+            temp = -1
         result = temp
         return result
+    
+    def formatter(self, stat: int) -> str:
+        if stat == -1:
+            return "N/A"
+        else:
+            return str(stat) + "%"
     
     #generates a list between the start and end days that were specified from earlier
     def generate_list(self) -> List[str]: 
         retentions = []
-        for i in range(self.start_day + 1, self.end_day + 1):
+        for i in range(self._start_day + 1, self._end_day + 1):
             retention_per = self.retention_percent(i - 1, i)
             retentions.append(retention_per)
         return retentions
+    
+    def get_period(self) -> Tuple(int, int):
+        return self._start_day, self.end_day
