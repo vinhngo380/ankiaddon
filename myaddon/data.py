@@ -32,17 +32,18 @@ class DataCalculator:
         try:
             total  = flunked + passed
             calc = round(((passed / total) * 100), 2)
-            temp = str(calc) + "%"
         except TypeError:
-            temp = "No cards studied yet"
+            temp = -1
         except ZeroDivisionError:
-            temp = "Zero division error"
+            temp = -2
         result = temp
         return result
     
-    def formatter(self, stat: int) -> str:
+    def formatter(self, stat: float) -> str:
         if stat == -1:
-            return "N/A"
+            return "No cards studied yet"
+        elif stat == -2:
+            return "Zero division error"
         else:
             return str(stat) + "%"
     
